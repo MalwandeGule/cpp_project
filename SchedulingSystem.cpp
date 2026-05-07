@@ -20,8 +20,8 @@ class Room;
 
 // TimeSlot structure
 struct TimeSlot {
-    int day;    // 1-5 (Monday-Friday)
-    int period; // 1-8 (class periods)
+    int day;    
+    int period; 
 
     TimeSlot(int d, int p) : day(d), period(p) {}
 
@@ -33,12 +33,8 @@ struct TimeSlot {
         return (day == other.day && period == other.period);
     }
     
-    // bool operator==(const TimeSlot& other) const {
-    //     return (day == other.day && period == other.period);
-    // }
 };
 
-// Course class
 class Course {
 public:
     string courseCode;
@@ -47,7 +43,7 @@ public:
     int maxCapacity;
     set<string> enrolledStudents;
     vector<TimeSlot> scheduledTimeSlots;
-    string majorRequirement; // Which major this course is core for
+    string majorRequirement; 
 
     Course(string code, string n, string roomType, int capacity, string majorReq)
         : courseCode(code), name(n), requiredRoomType(roomType),
@@ -80,12 +76,11 @@ public:
     }
 };
 
-// Student class
 class Student {
 public:
     string studentId;
     string major;
-    int academicYear; // 1-3 (1stYear to 3rdYear)
+    int academicYear;
     vector<string> enrolledCourses;
     time_t registrationTime;
 
@@ -108,7 +103,6 @@ public:
     }
 };
 
-// Room class
 class Room {
 public:
     string roomNumber;
@@ -144,24 +138,20 @@ public:
     }
 };
 
-// Registration Request structure
 struct RegistrationRequest {
     string studentId;
     string courseCode;
     time_t timestamp;
     int priority;
 
-    // Overload < operator for priority queue
     bool operator<(const RegistrationRequest& other) const {
-        // Higher priority comes first
         if (priority != other.priority) {
             return priority < other.priority;
         }
-        return timestamp > other.timestamp; // Earlier timestamp first if same priority
+        return timestamp > other.timestamp; 
     }
 };
 
-// CourseScheduler class
 class CourseScheduler {
 private:
     map<string, shared_ptr<Course>> courses;
@@ -169,19 +159,15 @@ private:
     map<string, shared_ptr<Room>> rooms;
     priority_queue<RegistrationRequest> requestQueue;
 
-    // Generate standard time slots for a course (2 periods back-to-back)
     vector<TimeSlot> generateTimeSlots(int day, int startPeriod) {
         return { TimeSlot(day, startPeriod), TimeSlot(day, startPeriod + 1) };
     }
 
-    // Calculate priority for a request
     int calculatePriority(const Student& student, const Course& course) {
         int priority = 0;
 
-        // Academic year (3rdYears get highest priority)
         priority += student.academicYear * 1000;
 
-        // Core course for major
         if (student.major == course.majorRequirement) {
             priority += 500;
         }
@@ -190,7 +176,6 @@ private:
     }
 
 public:
-    // Add objects to system
     void addCourse(shared_ptr<Course> course) {
         courses[course->courseCode] = course;
     }
@@ -203,7 +188,6 @@ public:
         rooms[room->roomNumber] = room;
     }
 
-    // Queue registration request
     void queueRegistrationRequest(const string& studentId, const string& courseCode) {
         auto studentIt = students.find(studentId);
         auto courseIt = courses.find(courseCode);
@@ -224,7 +208,6 @@ public:
             << " for course " << courseCode << endl;
     }
 
-    // Find suitable room for a course
     shared_ptr<Room> findSuitableRoom(Course& course, const vector<TimeSlot>& timeSlots) {
         for (auto& roomPair : rooms) {
             auto& room = roomPair.second;
@@ -237,14 +220,12 @@ public:
         return nullptr;
     }
 
-    // Schedule a course
     bool scheduleCourse(const string& courseCode) {
         auto courseIt = courses.find(courseCode);
         if (courseIt == courses.end()) return false;
 
         auto& course = courseIt->second;
 
-        // Try different time slots (Monday-Friday, periods 1-7)
         for (int day = 1; day <= 5; day++) {
             for (int period = 1; period <= 7; period++) {
                 vector<TimeSlot> proposedSlots = generateTimeSlots(day, period);
@@ -267,7 +248,6 @@ public:
         return false;
     }
 
-    // Process registration requests
     void processRequests() {
         cout << "\n=== PROCESSING REGISTRATION REQUESTS ===" << endl;
         int processed = 0;
@@ -288,19 +268,16 @@ public:
             auto& student = studentIt->second;
             auto& course = courseIt->second;
 
-            // Check if student is already enrolled
             if (student->isEnrolledIn(request.courseCode)) {
                 continue;
             }
 
-            // Schedule course if not already scheduled
             if (course->scheduledTimeSlots.empty()) {
                 if (!scheduleCourse(request.courseCode)) {
-                    continue; // Skip if couldn't schedule
+                    continue; 
                 }
             }
 
-            // Check for time conflicts with student's existing courses
             bool hasConflict = false;
             for (const auto& enrolledCourseCode : student->enrolledCourses) {
                 auto enrolledCourse = courses[enrolledCourseCode];
@@ -317,7 +294,6 @@ public:
             }
 
             if (!hasConflict && !course->isFull()) {
-                // Enroll student
                 if (course->enrollStudent(request.studentId)) {
                     student->enrolledCourses.push_back(request.courseCode);
                     successful++;
@@ -340,7 +316,6 @@ public:
             << successful << " successful registrations" << endl;
     }
 
-    // Balance class sizes (move students from overfull to underfull courses)
     void balanceClassSizes() {
         cout << "\n=== BALANCING CLASS SIZES ===" << endl;
 
@@ -352,10 +327,10 @@ public:
             int enrollment = course->enrolledStudents.size();
             int capacity = course->maxCapacity;
 
-            if (enrollment > capacity * 0.9) { // Over 90% capacity
+            if (enrollment > capacity * 0.9) { 
                 overfullCourses.push_back(course);
             }
-            else if (enrollment < capacity * 0.6) { // Under 60% capacity
+            else if (enrollment < capacity * 0.6) { 
                 underfullCourses.push_back(course);
             }
         }
@@ -366,7 +341,6 @@ public:
                     !overfullCourse->scheduledTimeSlots.empty() &&
                     !underfullCourse->scheduledTimeSlots.empty()) {
 
-                    // Check if time slots are compatible
                     bool timeCompatible = true;
                     for (const auto& slot1 : overfullCourse->scheduledTimeSlots) {
                         for (const auto& slot2 : underfullCourse->scheduledTimeSlots) {
@@ -379,10 +353,8 @@ public:
                     }
 
                     if (timeCompatible) {
-                        // Try to move some students
                         vector<string> studentsToMove;
                         for (const auto& studentId : overfullCourse->enrolledStudents) {
-                            // Check if student would have time conflict with underfull course
                             auto student = students[studentId];
                             bool hasConflict = false;
                             for (const auto& enrolledCourseCode : student->enrolledCourses) {
@@ -403,16 +375,14 @@ public:
 
                             if (!hasConflict) {
                                 studentsToMove.push_back(studentId);
-                                if (studentsToMove.size() >= 5) break; // Move max 5 at a time
+                                    if (studentsToMove.size() >= 5) break; 
                             }
                         }
 
-                        // Actually move the students
                         for (const auto& studentId : studentsToMove) {
                             overfullCourse->removeStudent(studentId);
                             underfullCourse->enrollStudent(studentId);
 
-                            // Update student's course list
                             auto student = students[studentId];
                             auto it = find(student->enrolledCourses.begin(),
                                 student->enrolledCourses.end(),
@@ -431,7 +401,6 @@ public:
         }
     }
 
-    // Generate individual student schedule
     void generateStudentSchedule(const string& studentId) {
         auto studentIt = students.find(studentId);
         if (studentIt == students.end()) {
@@ -452,10 +421,8 @@ public:
                 cout << "Day " << slot.day << ", Period " << slot.period << " ";
             }
             cout << "\n  Room: ";
-            // Find which room this course is in
             for (const auto& roomPair : rooms) {
                 if (!roomPair.second->isAvailable(course->scheduledTimeSlots)) {
-                    // This room has the time slots reserved, so course is here
                     cout << roomPair.first;
                     break;
                 }
@@ -464,7 +431,6 @@ public:
         }
     }
 
-    // Display all students in the system
     void displayAllStudents() {
         cout << "\n=== ALL STUDENTS ===" << endl;
         cout << "Total students: " << students.size() << endl;
@@ -483,7 +449,6 @@ public:
         cout << "=============================================" << endl;
     }
 
-    // Display detailed information about a specific student
     void displayStudentDetails(const string& studentId) {
         auto studentIt = students.find(studentId);
         if (studentIt == students.end()) {
@@ -514,7 +479,6 @@ public:
         }
     }
 
-    // Display students by major
     void displayStudentsByMajor(const string& major = "") {
         cout << "\n=== STUDENTS BY MAJOR ===" << endl;
 
@@ -525,7 +489,6 @@ public:
         }
 
         if (major.empty()) {
-            // Show all majors
             for (const auto& majorGroup : studentsByMajor) {
                 cout << "\nMajor: " << majorGroup.first << " ("
                     << majorGroup.second.size() << " students)" << endl;
@@ -536,7 +499,6 @@ public:
             }
         }
         else {
-            // Show specific major
             auto it = studentsByMajor.find(major);
             if (it != studentsByMajor.end()) {
                 cout << "\nMajor: " << major << " (" << it->second.size() << " students)" << endl;
@@ -552,7 +514,6 @@ public:
         }
     }
 
-    // Display system status
     void displayStatus() {
         cout << "\n=== SYSTEM STATUS ===" << endl;
         cout << "Courses: " << courses.size() << endl;
@@ -569,9 +530,7 @@ public:
     }
 };
 
-// Sample data initialization
 void initializeSampleData(CourseScheduler& scheduler) {
-    // Add rooms
     vector<TimeSlot> allSlots;
     for (int day = 1; day <= 5; day++) {
         for (int period = 1; period <= 8; period++) {
@@ -584,7 +543,6 @@ void initializeSampleData(CourseScheduler& scheduler) {
     scheduler.addRoom(make_shared<Room>("LAB1", "Lab", 25, allSlots));
     scheduler.addRoom(make_shared<Room>("LAB2", "Lab", 30, allSlots));
 
-    // Add courses
     scheduler.addCourse(make_shared<Course>("CS101", "Introduction to Programming", "Lecture", 45, "Computer Science"));
     scheduler.addCourse(make_shared<Course>("CS201", "Data Structures", "Lecture", 40, "Computer Science"));
     scheduler.addCourse(make_shared<Course>("CS301", "Algorithms", "Lecture", 35, "Computer Science"));
@@ -594,7 +552,6 @@ void initializeSampleData(CourseScheduler& scheduler) {
     scheduler.addCourse(make_shared<Course>("MATH101", "Calculus I", "Lecture", 40, "Mathematics"));
     scheduler.addCourse(make_shared<Course>("PHYS101", "Physics I", "Lecture", 35, "Physics"));
 
-    // Add students
     scheduler.addStudent(make_shared<Student>("S002", "Computer Science", 3));
     scheduler.addStudent(make_shared<Student>("S003", "Computer Science", 2));
     scheduler.addStudent(make_shared<Student>("S004", "Computer Science", 1)); // 1stYears
@@ -606,11 +563,9 @@ void initializeSampleData(CourseScheduler& scheduler) {
     scheduler.addStudent(make_shared<Student>("S010", "Computer Science", 3));
 }
 
-// Main function
 int main() {
     CourseScheduler scheduler;
 
-    // Initialize with sample data
     initializeSampleData(scheduler);
 
     int choice;
@@ -682,7 +637,3 @@ int main() {
 
     return 0;
 }
-
-
-git config --global user.email "malwande.gule@gmail.com"
-  git config --global user.name ""
