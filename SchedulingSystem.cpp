@@ -22,6 +22,7 @@ class Room;
 struct TimeSlot {
     int day;    // 1-5 (Monday-Friday)
     int period; // 1-8 (class periods)
+    // Some comments about the time slot
 
     TimeSlot(int d, int p) : day(d), period(p) {}
 
