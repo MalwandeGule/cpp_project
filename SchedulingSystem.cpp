@@ -22,7 +22,6 @@ class Room;
 struct TimeSlot {
     int day;    // 1-5 (Monday-Friday)
     int period; // 1-8 (class periods)
-    // Some comments about the time slot
 
     TimeSlot(int d, int p) : day(d), period(p) {}
 
@@ -33,6 +32,10 @@ struct TimeSlot {
     bool operator==(const TimeSlot& other) const {
         return (day == other.day && period == other.period);
     }
+    
+    // bool operator==(const TimeSlot& other) const {
+    //     return (day == other.day && period == other.period);
+    // }
 };
 
 // Course class
@@ -679,3 +682,7 @@ int main() {
 
     return 0;
 }
+
+
+git config --global user.email "malwande.gule@gmail.com"
+  git config --global user.name ""
